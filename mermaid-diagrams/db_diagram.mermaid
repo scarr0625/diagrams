@@ -1,0 +1,81 @@
+erDiagram
+
+    JOURNEY ||--o{ WORKFLOW_EXECUTION : "has"
+    JOURNEY ||--o{ JOURNEY_EVENT : "produces"
+    JOURNEY ||--o{ CHECKLIST_ITEM : "evaluates"
+    JOURNEY ||--o{ EXTERNAL_DEPENDENCY : "tracks"
+    JOURNEY ||--o{ JOURNEY_DATA : "stores"
+    JOURNEY ||--o{ CONVERSATION : "has"
+
+
+    JOURNEY {
+        UUID journey_id PK
+        STRING apm_id
+        STRING application_name
+        STRING current_stage
+        STRING status
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+
+    WORKFLOW_EXECUTION {
+        UUID workflow_id PK
+        UUID journey_id FK
+        STRING workflow_state
+        STRING current_activity
+        INT retry_count
+        TIMESTAMP next_execution_time
+        TIMESTAMP created_at
+    }
+
+
+    JOURNEY_DATA {
+        UUID data_id PK
+        UUID journey_id FK
+        STRING field_name
+        STRING field_value
+        STRING source_type
+        STRING validation_status
+        TIMESTAMP updated_at
+    }
+
+
+    CHECKLIST_ITEM {
+        UUID checklist_id PK
+        UUID journey_id FK
+        STRING rule_id
+        STRING rule_version
+        STRING status
+        STRING blocker_reason
+        TIMESTAMP evaluated_at
+    }
+
+
+    EXTERNAL_DEPENDENCY {
+        UUID dependency_id PK
+        UUID journey_id FK
+        STRING system_name
+        STRING request_id
+        STRING status
+        TIMESTAMP last_checked
+    }
+
+
+    JOURNEY_EVENT {
+        UUID event_id PK
+        UUID journey_id FK
+        STRING event_type
+        INT event_version
+        JSON payload
+        TIMESTAMP created_at
+    }
+
+
+    CONVERSATION {
+        UUID conversation_id PK
+        UUID journey_id FK
+        STRING user_id
+        STRING session_id
+        TIMESTAMP created_at
+    }

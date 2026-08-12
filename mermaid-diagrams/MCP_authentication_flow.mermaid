@@ -1,0 +1,21 @@
+sequenceDiagram
+
+participant Agent
+participant MCP
+participant Policy as Authorization Policy
+participant Tool
+
+
+Agent->>MCP: Call tool
+
+MCP->>Policy: Validate request
+
+Policy->>Policy: Check\nuser + journey + tool permission
+
+Policy-->>MCP: Allow/Deny
+
+MCP->>Tool: Execute
+
+Tool-->>MCP: Response
+
+MCP-->>Agent: Structured result

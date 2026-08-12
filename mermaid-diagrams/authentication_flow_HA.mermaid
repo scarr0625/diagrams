@@ -1,0 +1,29 @@
+sequenceDiagram
+
+participant User
+participant Portal as Cloud Journey Portal
+participant Backend as Cloud Journey Backend
+participant Agent as Agent Runtime
+participant MCP as MCP Server
+participant GCP as GCP Services
+
+
+User->>Portal: Login using Schwab SSO
+
+Portal->>Backend: Send authenticated user context
+
+Backend->>Agent: Create agent session\n(user_id, journey_id)
+
+Agent->>MCP: Request tool execution
+
+MCP->>Backend: Validate user authorization
+
+Backend->>GCP: Use workload identity/service identity
+
+GCP-->>Backend: Return authorized data
+
+Backend-->>MCP: Tool response
+
+MCP-->>Agent: Structured result
+
+Agent-->>User: Explain result

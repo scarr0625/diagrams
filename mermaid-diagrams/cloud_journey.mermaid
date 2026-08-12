@@ -1,0 +1,286 @@
+flowchart LR
+
+%% =========================
+%% USER LAYER
+%% =========================
+
+U[User<br/>SSO via mySSO]
+
+UI[Cloud Journey Portal UI<br/><br/>
+- Register Application<br/>
+- Provide App Details<br/>
+- Select Environment<br/>
+- View Status & History]
+
+U --> UI
+
+
+%% =========================
+%% AGENTIC LAYER
+%% =========================
+
+subgraph AGENT["Agentic Layer - Cloud Journey"]
+direction TB
+
+CA[Conversation / Guidance Agent<br/><br/>
+Responsibilities:<br/>
+- Collect missing information<br/>
+- Ask clarification questions<br/>
+- Explain requirements<br/>
+- Guide user decisions]
+
+DA[Data Completion Agent<br/><br/>
+- Suggest valid values<br/>
+- Identify missing fields<br/>
+- Explain impact of choices]
+
+VA[Validation Agent<br/><br/>
+Business Validation:<br/>
+- Validate APM ID<br/>
+- Validate ownership<br/>
+- Validate unique short name<br/>
+- Validate cross-app constraints]
+
+CA --> DA --> VA
+
+end
+
+UI --> CA
+
+
+%% =========================
+%% DURABLE STATE MACHINE
+%% =========================
+
+subgraph CJSM["Cloud Journey Durable State Machine (Google ADK)"]
+direction TB
+
+DB[(Journey Database<br/>PostgreSQL<br/><br/>
+Source of Truth:<br/>
+- Application metadata<br/>
+- State<br/>
+- Manifest versions<br/>
+- Approvals<br/>
+- Audit history)]
+
+S1[Journey Started<br/>APM ID Registered]
+
+S2[Requirements Collection]
+
+S3[Validation Complete]
+
+S4[Generate Proposed Manifest]
+
+S5[Plan Requested]
+
+S6[Plan Result Received]
+
+S7[Human Approval Gate]
+
+S8[Publish Apply Manifest]
+
+S9[App Factory Execution Triggered]
+
+S10[Receive Build Outputs]
+
+S11[Journey Completed]
+
+S1 --> S2 --> S3 --> S4 --> S5 --> S6 --> S7 --> S8 --> S9 --> S10 --> S11
+
+
+%% Persistence
+S1 -.-> DB
+S2 -.-> DB
+S3 -.-> DB
+S4 -.-> DB
+S5 -.-> DB
+S6 -.-> DB
+S7 -.-> DB
+S8 -.-> DB
+S9 -.-> DB
+S10 -.-> DB
+S11 -.-> DB
+
+end
+
+
+VA --> S3
+
+
+%% =========================
+%% MANIFEST FLOW
+%% =========================
+
+subgraph MANIFEST["Manifest Lifecycle Management"]
+direction TB
+
+PM[Proposed Manifest<br/>JSON]
+
+AM[Apply Manifest<br/>Approved JSON]
+
+MH[Manifest History<br/><br/>
+- Previous versions<br/>
+- Diff<br/>
+- Changed by<br/>
+- Timestamp<br/>
+- Approval record]
+
+PM --> MH
+AM --> MH
+
+end
+
+
+S4 --> PM
+S8 --> AM
+
+
+%% =========================
+%% HUMAN APPROVAL
+%% =========================
+
+subgraph HUMAN["Human Governance"]
+direction TB
+
+HA[Authorized Approver<br/><br/>
+Application Owner /<br/>
+Platform Owner /<br/>
+Release Manager]
+
+PR[Review Terraform Plan<br/><br/>
+- Compare diff<br/>
+- Review risks<br/>
+- Confirm expected changes]
+
+HA --> PR
+
+end
+
+
+S6 --> PR
+PR --> S7
+
+
+%% =========================
+%% AGENT ASSISTANCE
+%% =========================
+
+AS[Agent Assistant<br/><br/>
+Can:<br/>
+- Summarize Terraform Plan<br/>
+- Explain risky changes<br/>
+- Analyze failures<br/>
+- Answer questions<br/><br/>
+Cannot:<br/>
+- Approve changes<br/>
+- Execute privileged actions]
+
+S6 -.-> AS
+AS -.-> HA
+
+
+%% =========================
+%% APP FACTORY
+%% =========================
+
+subgraph AF["App Factory Execution (Deterministic)"]
+direction TB
+
+ORCH[App Factory Orchestrator<br/><br/>
+Hourly MVP / Future Event Driven]
+
+PLAN[Terraform Plan<br/><br/>
+Structural Validation]
+
+APPLY[Terraform Apply<br/><br/>
+Infrastructure Creation]
+
+OUT[Standard Output Artifact JSON<br/><br/>
+- Pipeline IDs<br/>
+- Project IDs<br/>
+- Network IDs<br/>
+- Trigger IDs]
+
+ORCH --> PLAN --> APPLY --> OUT
+
+end
+
+
+S5 --> ORCH
+S9 --> ORCH
+
+
+%% =========================
+%% OUTPUT INGESTION
+%% =========================
+
+subgraph OBS["Cloud Journey Observability"]
+direction TB
+
+INGEST[Output Ingestion Service]
+
+STATUS[Journey UI Status View<br/><br/>
+- Pipeline Status<br/>
+- Duration<br/>
+- Failure Rate<br/>
+- Logs]
+
+INGEST --> STATUS
+
+end
+
+
+OUT --> INGEST
+INGEST --> DB
+
+
+%% =========================
+%% EXTERNAL SYSTEMS
+%% =========================
+
+subgraph EXT["External Systems"]
+direction TB
+
+MCP[MCP Gateway<br/><br/>
+Controlled Access Layer]
+
+STS[STS Insights<br/>Application Metadata]
+
+MYACCESS[MyAccess API<br/>AD Groups]
+
+CNMS[CNMS Notification]
+
+AFSYS[App Factory<br/>Project Factory 3]
+
+end
+
+
+CA --> MCP
+VA --> MCP
+
+MCP --> STS
+MCP --> MYACCESS
+MCP --> CNMS
+
+ORCH --> AFSYS
+
+
+%% =========================
+%% SECURITY PRINCIPLE
+%% =========================
+
+SEC[Security Boundary<br/><br/>
+Agent ≠ Provisioner<br/><br/>
+Agent:<br/>
+✓ Collect<br/>
+✓ Validate<br/>
+✓ Explain<br/>
+✓ Monitor<br/><br/>
+
+Deterministic Workflow:<br/>
+✓ Generate Manifest<br/>
+✓ Execute Terraform<br/>
+✓ Provision Infrastructure]
+
+SEC -.-> CA
+SEC -.-> ORCH

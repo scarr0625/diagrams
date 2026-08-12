@@ -1,0 +1,52 @@
+flowchart TB
+
+UI[Cloud Journey UI / Cloud Compass UI]
+
+Agent[AI Assistant Agent]
+
+MCP[Cloud Services MCP Server]
+
+Workflow[Durable Journey State Machine]
+
+Domain[Cloud Journey Domain Services]
+
+DB[(Cloud Journey Database)]
+
+Events[(Event Bus / Outbox)]
+
+Checklist[Checklist & Readiness Service]
+
+Adapters[Integration Adapter Layer]
+
+STS[STS Insights]
+Jira[Jira / Governance]
+MyAccess[MyAccess]
+AppFactory[App Factory]
+Provision[Provisioning Platform]
+
+
+UI --> Agent
+
+Agent --> MCP
+
+MCP --> Domain
+
+Domain --> DB
+
+Domain --> Events
+
+Events --> Workflow
+
+Workflow --> Domain
+
+Workflow --> Checklist
+
+Checklist --> Domain
+
+Workflow --> Adapters
+
+Adapters --> STS
+Adapters --> Jira
+Adapters --> MyAccess
+Adapters --> AppFactory
+Adapters --> Provision

@@ -1,0 +1,58 @@
+<mxfile host="65bd71144e">
+    <diagram id="cloud-journey-app-factory" name="Cloud Journey App Factory Workflow">
+        <mxGraphModel dx="1202" dy="840" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2200" pageHeight="1700" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="user" value="USER / UI&#xa;&#xa;Developer / Owner&#xa;&#xa;Cloud Journey Portal&#xa;- Register application&#xa;- Submit request&#xa;- View status/history" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="120" width="220" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="agent" value="AGENTIC LAYER&#xa;(Assistant Only)&#xa;&#xa;Cloud Journey Agent&#xa;&#xa;✓ Collect information&#xa;✓ Ask questions&#xa;✓ Validate context&#xa;✓ Explain requirements&#xa;✓ Summarize Terraform plan&#xa;✓ Analyze failures&#xa;&#xa;DOES NOT approve or provision" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+                    <mxGeometry x="340" y="80" width="300" height="280" as="geometry"/>
+                </mxCell>
+                <mxCell id="state" value="DURABLE STATE MACHINE&#xa;(Google ADK Workflow)&#xa;&#xa;START&#xa;↓&#xa;DATA COLLECTION&#xa;↓&#xa;VALIDATION&#xa;↓&#xa;GOVERNANCE&#xa;↓&#xa;MANIFEST CREATED&#xa;↓&#xa;PLAN RUNNING&#xa;↓&#xa;APPROVAL WAIT&#xa;↓&#xa;APPLY RUNNING&#xa;↓&#xa;COMPLETED&#xa;&#xa;Capabilities:&#xa;- Persist state&#xa;- Resume after failure&#xa;- Human approval wait&#xa;- Retry/rollback&#xa;- Audit trail" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="740" y="60" width="300" height="420" as="geometry"/>
+                </mxCell>
+                <mxCell id="manifest" value="CLOUD JOURNEY CONTROL PLANE&#xa;&#xa;Manifest Lifecycle&#xa;&#xa;- Generate proposed JSON manifest&#xa;- Store versions&#xa;- Maintain active/proposed diff&#xa;- Record approvals&#xa;- Audit history&#xa;&#xa;Journey DB = Source of Truth" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="740" y="540" width="300" height="240" as="geometry"/>
+                </mxCell>
+                <mxCell id="approval" value="HUMAN APPROVAL GATE (RBAC)&#xa;&#xa;Human reviews:&#xa;- Terraform plan&#xa;- Diff&#xa;- Risk summary&#xa;&#xa;Decision:&#xa;APPROVE / REJECT / MODIFY&#xa;&#xa;Agent assists but does NOT approve" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+                    <mxGeometry x="1120" y="120" width="300" height="220" as="geometry"/>
+                </mxCell>
+                <mxCell id="appfactory" value="APP FACTORY EXECUTION&#xa;(Deterministic)&#xa;&#xa;- Consume approved manifest&#xa;- Terraform validation&#xa;- Terraform plan/apply&#xa;- Create infrastructure&#xa;- Generate output artifacts&#xa;&#xa;NO business decisions" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+                    <mxGeometry x="1120" y="460" width="300" height="280" as="geometry"/>
+                </mxCell>
+                <mxCell id="outputs" value="OUTPUT CONTRACT&#xa;&#xa;App Factory returns JSON&#xa;&#xa;- Pipeline IDs&#xa;- Build URIs&#xa;- Project IDs&#xa;- Network IDs&#xa;- Trigger IDs&#xa;&#xa;CJ ingests and displays status" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="1540" y="460" width="300" height="260" as="geometry"/>
+                </mxCell>
+                <mxCell id="db" value="JOURNEY DATABASE&#xa;&#xa;- Requests&#xa;- State transitions&#xa;- Manifest history&#xa;- Approvals&#xa;- Audit logs&#xa;- Pipeline status" style="shape=cylinder;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                    <mxGeometry x="1540" y="100" width="300" height="220" as="geometry"/>
+                </mxCell>
+                <mxCell id="external" value="EXTERNAL SYSTEMS&#xa;&#xa;- mySSO / IdP&#xa;- AD / EntraID&#xa;- CNMS&#xa;- GCP Resources&#xa;- Cloud Build" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" parent="1" vertex="1">
+                    <mxGeometry x="2020" y="340" width="300" height="220" as="geometry"/>
+                </mxCell>
+                <mxCell id="e1" parent="1" source="user" target="agent" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e2" parent="1" source="agent" target="state" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e3" parent="1" source="state" target="manifest" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e4" parent="1" source="manifest" target="approval" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e5" parent="1" source="approval" target="appfactory" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e6" parent="1" source="appfactory" target="outputs" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e7" parent="1" source="outputs" target="db" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

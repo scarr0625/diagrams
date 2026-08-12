@@ -1,0 +1,116 @@
+flowchart TD
+
+START([User enters APM ID])
+
+VALIDATE_APM[Validate APM ID]
+
+GET_APM[Retrieve APM Profile through MCP]
+
+CONFIRM{User confirms application details?}
+
+CREATE[Create Journey Record]
+
+EVENT[Publish JourneyStarted Event]
+
+CHECKLIST[Calculate Initial Checklist]
+
+MISSING{Missing Required Data?}
+
+COLLECT[Agent collects missing information]
+
+VALIDATE[Deterministic Validation]
+
+SAVE[Persist Validated Journey Data]
+
+GOV{Governance Required?}
+
+JIRA[Create / Attach Governance Ticket]
+
+WAIT_GOV[Wait for Governance Approval]
+
+MYACCESS{MyAccess Required?}
+
+REQUEST_ACCESS[Submit MyAccess Request]
+
+WAIT_ACCESS[Wait for AD Group Completion]
+
+DEPENDENCY[Evaluate Dependencies]
+
+READY{Readiness Complete?}
+
+WAIT[Wait for Remaining Items]
+
+READINESS[Set app_factory_ready=true]
+
+HANDOFF[Invoke App Factory Handoff Service]
+
+MANIFEST[Generate Manifest Deterministically]
+
+PUBLISH[Publish Approved Manifest]
+
+PROVISION[Monitor Provisioning]
+
+BAU[Transition Journey to BAU]
+
+END([Journey Complete])
+
+
+START --> VALIDATE_APM
+
+VALIDATE_APM --> GET_APM
+
+GET_APM --> CONFIRM
+
+CONFIRM -->|Yes| CREATE
+
+CREATE --> EVENT
+
+EVENT --> CHECKLIST
+
+CHECKLIST --> MISSING
+
+MISSING -->|Yes| COLLECT
+
+COLLECT --> VALIDATE
+
+VALIDATE --> SAVE
+
+SAVE --> CHECKLIST
+
+MISSING -->|No| GOV
+
+GOV -->|Yes| JIRA
+
+JIRA --> WAIT_GOV
+
+WAIT_GOV --> GOV
+
+GOV -->|No| MYACCESS
+
+MYACCESS -->|Yes| REQUEST_ACCESS
+
+REQUEST_ACCESS --> WAIT_ACCESS
+
+WAIT_ACCESS --> MYACCESS
+
+MYACCESS -->|No| DEPENDENCY
+
+DEPENDENCY --> READY
+
+READY -->|No| WAIT
+
+WAIT --> DEPENDENCY
+
+READY -->|Yes| READINESS
+
+READINESS --> HANDOFF
+
+HANDOFF --> MANIFEST
+
+MANIFEST --> PUBLISH
+
+PUBLISH --> PROVISION
+
+PROVISION --> BAU
+
+BAU --> END
