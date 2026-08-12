@@ -1,81 +1,130 @@
 erDiagram
 
-    JOURNEY ||--o{ WORKFLOW_EXECUTION : "has"
-    JOURNEY ||--o{ JOURNEY_EVENT : "produces"
-    JOURNEY ||--o{ CHECKLIST_ITEM : "evaluates"
-    JOURNEY ||--o{ EXTERNAL_DEPENDENCY : "tracks"
-    JOURNEY ||--o{ JOURNEY_DATA : "stores"
-    JOURNEY ||--o{ CONVERSATION : "has"
-
-
     JOURNEY {
-        UUID journey_id PK
-        STRING apm_id
-        STRING application_name
-        STRING current_stage
-        STRING status
-        TIMESTAMP created_at
-        TIMESTAMP updated_at
+        uuid journey_id PK
+        string apm_id
+        string application_name
+        string owner_user_id
+        string current_state
+        int state_version
+        string correlation_id
+        timestamp created_at
+        timestamp updated_at
+        timestamp started_at
+        timestamp completed_at
+    }
+
+
+    JOURNEY_STATE_HISTORY {
+        uuid history_id PK
+        uuid journey_id FK
+        string from_state
+        string to_state
+        string transition_reason
+        string trigger_event
+        string performed_by
+        timestamp created_at
     }
 
 
     WORKFLOW_EXECUTION {
-        UUID workflow_id PK
-        UUID journey_id FK
-        STRING workflow_state
-        STRING current_activity
-        INT retry_count
-        TIMESTAMP next_execution_time
-        TIMESTAMP created_at
+        uuid workflow_id PK
+        uuid journey_id FK
+        string workflow_type
+        string status
+        string current_activity
+        timestamp started_at
+        timestamp last_checkpoint
+        timestamp completed_at
     }
 
 
-    JOURNEY_DATA {
-        UUID data_id PK
-        UUID journey_id FK
-        STRING field_name
-        STRING field_value
-        STRING source_type
-        STRING validation_status
-        TIMESTAMP updated_at
-    }
-
-
-    CHECKLIST_ITEM {
-        UUID checklist_id PK
-        UUID journey_id FK
-        STRING rule_id
-        STRING rule_version
-        STRING status
-        STRING blocker_reason
-        TIMESTAMP evaluated_at
-    }
-
-
-    EXTERNAL_DEPENDENCY {
-        UUID dependency_id PK
-        UUID journey_id FK
-        STRING system_name
-        STRING request_id
-        STRING status
-        TIMESTAMP last_checked
+    WORKFLOW_ACTIVITY {
+        uuid activity_id PK
+        uuid workflow_id FK
+        string activity_type
+        string status
+        int attempt_count
+        string idempotency_key
+        string error_message
+        timestamp started_at
+        timestamp completed_at
     }
 
 
     JOURNEY_EVENT {
-        UUID event_id PK
-        UUID journey_id FK
-        STRING event_type
-        INT event_version
-        JSON payload
-        TIMESTAMP created_at
+        uuid event_id PK
+        uuid journey_id FK
+        string event_type
+        int event_version
+        json payload
+        string correlation_id
+        boolean processed
+        timestamp created_at
     }
 
 
-    CONVERSATION {
-        UUID conversation_id PK
-        UUID journey_id FK
-        STRING user_id
-        STRING session_id
-        TIMESTAMP created_at
+    JOURNEY_DATA {
+        uuid data_id PK
+        uuid journey_id FK
+        string field_name
+        json field_value
+        string source
+        string validation_status
+        string approved_by
+        timestamp created_at
+        timestamp updated_at
     }
+
+
+    JOURNEY_CHECKLIST {
+        uuid checklist_id PK
+        uuid journey_id FK
+        string rule_id
+        string rule_version
+        string status
+        boolean required
+        boolean blocking
+        string owner
+        timestamp updated_at
+    }
+
+
+    EXTERNAL_REQUEST {
+        uuid request_id PK
+        uuid journey_id FK
+        string system_name
+        string request_type
+        string external_id
+        string status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+
+    AUDIT_LOG {
+        uuid audit_id PK
+        uuid journey_id FK
+        string actor_type
+        string actor_id
+        string action
+        json details
+        timestamp created_at
+    }
+
+
+    JOURNEY ||--o{ JOURNEY_STATE_HISTORY : "has state transitions"
+
+    JOURNEY ||--o{ WORKFLOW_EXECUTION : "runs workflows"
+
+    WORKFLOW_EXECUTION ||--o{ WORKFLOW_ACTIVITY : "contains activities"
+
+    JOURNEY ||--o{ JOURNEY_EVENT : "publishes events"
+
+    JOURNEY ||--o{ JOURNEY_DATA : "stores collected data"
+
+    JOURNEY ||--o{ JOURNEY_CHECKLIST : "evaluates rules"
+
+    JOURNEY ||--o{ EXTERNAL_REQUEST : "tracks integrations"
+
+    JOURNEY ||--o{ AUDIT_LOG : "records actions"
