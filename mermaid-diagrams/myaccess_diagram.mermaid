@@ -1,0 +1,62 @@
+flowchart TB
+    U[Cloud Journey User] 
+    UI[Cloud Journey Portal] 
+    AGENT[Cloud Journey Agent] 
+    DSM[Durable Journey<br/>State Machine] 
+    JDB[(Cloud Journey DB)] 
+    MCP[MCP Server] 
+    POLICY[Tool Validation<br/>& Authorization Layer] 
+
+    TOKEN[OAuth Token Manager] 
+    SM[Secret Manager] 
+    AUTH[Enterprise OAuth<br/>Authorization Server] 
+
+    MYA[MyAccess REST API]
+
+    AUDIT[(Audit / Observability)] 
+    
+    U --> UI 
+    UI --> AGENT 
+    
+    AGENT --> DSM 
+    
+    DSM --> JDB 
+    
+    AGENT -->|MCP Tool Call| MCP 
+    
+    MCP --> POLICY 
+    POLICY -->|Read application / owner data| JDB 
+    
+    POLICY --> TOKEN 
+    
+    TOKEN -->|Read Client Credentials| SM 
+    
+    TOKEN -->|Client ID + Client Secret| AUTH 
+    
+    AUTH -->|Short-lived Access Token| TOKEN 
+    
+    TOKEN -->|Bearer Token| POLICY 
+    
+    POLICY -->|POST Create Group| MYA 
+    
+    MYA -->|Master Request ID| POLICY 
+    
+    POLICY -->|Normalized Result| MCP 
+    
+    MCP --> AGENT 
+    
+    AGENT -->|Persist Pending State| DSM 
+    
+    DSM --> JDB 
+    
+    MCP -->|GET Request Status| MYA 
+    
+    MYA -->|Created / Pending / Failed| MCP 
+    
+    MCP --> AGENT 
+    
+    AGENT --> DSM
+
+    MCP --> AUDIT 
+
+    DSM --> AUDIT
