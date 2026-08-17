@@ -1,0 +1,68 @@
+flowchart TB
+
+    U[End User]
+
+    UI["Cloud Journey Web App<br/>(Cloud Run + Firebase Hosting)"]
+
+    AGENT["Cloud Journey Orchestrator Agent<br/>(Vertex AI Agent Engine)"]
+
+    DSM["Durable Workflow Engine<br/>(Cloud Workflows)"]
+
+    JDB[(Firestore / Cloud SQL<br/>Journey State Store)]
+
+    MCP_G["MCP Server - Google Managed<br/>(Vertex AI Extensions / Agent Tools)"]
+
+    MCP_C["MCP Server - Custom<br/>(Cloud Run MCP Service)"]
+
+    POLICY["IAM Policy Enforcement Layer<br/>(IAM + API Gateway + Cloud Armor)"]
+
+    IDENTITY["Google Cloud IAM<br/>(Workload Identity Federation / Service Accounts)"]
+
+    SM[Secret Manager]
+
+    AUTH["External Enterprise IdP<br/>(Google Cloud Identity / Okta / Azure AD)"]
+
+    MYA["MyAccess API<br/>(External Enterprise System)"]
+
+    AUDIT[(Cloud Logging + Cloud Trace + BigQuery Audit Logs)]
+
+    U --> UI
+    UI --> AGENT
+
+    AGENT --> DSM
+    DSM --> JDB
+
+    AGENT -->|"Tool Call (Managed)"| MCP_G
+    AGENT -->|"Tool Call (Custom)"| MCP_C
+
+    MCP_G --> POLICY
+    MCP_C --> POLICY
+
+    POLICY -->|Read/Write Journey Data| JDB
+
+    POLICY --> IDENTITY
+    IDENTITY -->|"Service Account Token (ADC)"| POLICY
+
+    IDENTITY --> SM
+    SM -->|"Secrets (if external auth needed)"| IDENTITY
+
+    IDENTITY --> AUTH
+    AUTH -->|OIDC / SAML Exchange| IDENTITY
+
+    POLICY -->|Authorized API Call| MYA
+    MYA -->|Request Status| POLICY
+
+    POLICY --> MCP_G
+    POLICY --> MCP_C
+
+    MCP_G --> AGENT
+    MCP_C --> AGENT
+
+    AGENT -->|Persist State Updates| DSM
+    DSM --> JDB
+
+    MCP_G --> AUDIT
+    MCP_C --> AUDIT
+    AGENT --> AUDIT
+    DSM --> AUDIT
+    POLICY --> AUDIT
