@@ -1,0 +1,32 @@
+flowchart LR
+
+    USER[Schwab User]
+
+    SSO[SAML SSO]
+
+    XAPI[Cloud Journey API]
+
+    AUTH[APM Authorization Service]
+
+    AGENT[Agent Runtime]
+
+    GW[Agent Gateway]
+
+    MCP[MCP Server]
+
+    EXT[External Systems]
+
+
+    USER --> SSO
+
+    SSO --> XAPI
+
+    XAPI --> AUTH
+
+    AUTH --> AGENT
+
+    AGENT --> GW
+
+    GW --> MCP
+
+    MCP --> EXT

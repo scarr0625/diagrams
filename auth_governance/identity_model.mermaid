@@ -1,0 +1,19 @@
+flowchart LR
+
+    ORCH[Orchestrator Agent]
+
+    ACCESS[Access Agent]
+
+    VALIDATION[Validation Agent]
+
+    SA1[Orchestrator Service Account]
+
+    SA2[Access Agent Service Account]
+
+    SA3[Validation Agent Service Account]
+
+    ORCH --> SA1
+
+    ACCESS --> SA2
+
+    VALIDATION --> SA3

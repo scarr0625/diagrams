@@ -1,0 +1,27 @@
+flowchart LR
+
+    USER[Schwab User]
+
+    IDP[Enterprise Identity Provider<br/>SAML SSO]
+
+    XAPI[Cloud Journey Experience API / Backend]
+
+    AUTHZ[Cloud Journey Authorizer]
+
+    AGENT[Cloud Journey Agent Runtime]
+
+    GW[Agent Gateway]
+
+    MCP[Custom MCP Server]
+
+    USER -->|SAML Authentication| IDP
+
+    IDP -->|SAML Assertion| XAPI
+
+    XAPI --> AUTHZ
+
+    AUTHZ -->|Authenticated User Context| AGENT
+
+    AGENT -->|Agent Identity + User Context| GW
+
+    GW --> MCP
