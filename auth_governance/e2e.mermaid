@@ -1,0 +1,27 @@
+flowchart TB 
+    USER[Schwab User] 
+    SSO[SAML / MySSO] 
+    XAPI[Cloud Journey XAPI] 
+    IAUTH[Ingress Authorization<br/>User + APM + Role + Action] 
+    ROLE[APM / Role API] 
+    AGENT[Agent Runtime<br/>Dedicated Agent Identity] 
+    GW[Agent Gateway] 
+    EAUTH[Egress Authorization<br/>IAM / IAP + Semantic Policy] 
+    MA[Model Armor] 
+    GMCP[Google Managed MCP] 
+    CMCP[Custom MCP<br/>Cloud Run] 
+    GCP[GCP Services] 
+    ENT[Enterprise APIs] 
+    USER --> SSO 
+    SSO --> XAPI 
+    XAPI --> IAUTH 
+    IAUTH --> ROLE 
+    ROLE --> IAUTH 
+    IAUTH -->|ALLOW + User Context| AGENT 
+    AGENT --> GW 
+    GW --> EAUTH 
+    EAUTH --> MA 
+    MA --> GMCP 
+    MA --> CMCP 
+    GMCP --> GCP 
+    CMCP --> ENT
