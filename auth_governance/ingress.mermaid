@@ -1,0 +1,13 @@
+flowchart LR
+    U[Authenticated User] 
+    XAPI[Cloud Journey XAPI] 
+    CA[Custom Authorizer] 
+    API[APM / Role API] 
+    A[Allow] 
+    D[Deny] 
+    U --> XAPI 
+    XAPI --> CA 
+    CA -->|User ID / Email + APM ID| API 
+    API -->|Role + Role Type + Scope| CA 
+    CA -->|Authorized| A 
+    CA -->|Unauthorized| D

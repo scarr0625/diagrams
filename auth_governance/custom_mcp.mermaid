@@ -1,0 +1,12 @@
+flowchart LR 
+    A[Cloud Journey Agent] 
+    GW[Agent Gateway] 
+    SP[Semantic Policy] 
+    MCP[Custom MCP<br/>Cloud Run] 
+    API[Schwab / Backend API] 
+    DB[(Database / Enterprise System)] 
+    A --> GW 
+    GW --> SP 
+    SP --> MCP 
+    MCP --> API 
+    API --> DB
