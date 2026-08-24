@@ -1,27 +1,26 @@
-flowchart LR
-
-    USER[Schwab User]
-
-    IDP[Enterprise Identity Provider<br/>SAML SSO]
-
-    XAPI[Cloud Journey Experience API / Backend]
-
-    AUTHZ[Cloud Journey Authorizer]
-
-    AGENT[Cloud Journey Agent Runtime]
-
-    GW[Agent Gateway]
-
-    MCP[Custom MCP Server]
-
-    USER -->|SAML Authentication| IDP
-
-    IDP -->|SAML Assertion| XAPI
-
-    XAPI --> AUTHZ
-
-    AUTHZ -->|Authenticated User Context| AGENT
-
-    AGENT -->|Agent Identity + User Context| GW
-
-    GW --> MCP
+flowchart LR 
+    U[Schwab User] 
+    SSO[SAML / MySSO] 
+    XAPI[Cloud Journey XAPI / Backend] 
+    AUTHZ[Ingress Authorization<br/>Custom Authorizer] 
+    APM[APM Role / Access API] 
+    AGENT[Cloud Journey Agent<br/>Vertex AI Agent Engine] 
+    GW[Agent Gateway] 
+    SP[Semantic Policy<br/>Action / Data Guardrails] 
+    GMCP[Google Managed MCP Server] 
+    CMCP[Custom MCP Server<br/>Cloud Run] 
+    GCP[GCP Services] 
+    ENT[Schwab / Enterprise APIs] 
+    
+    U -->|Authenticate| SSO 
+    SSO -->|Authenticated User Context| XAPI 
+    XAPI --> AUTHZ 
+    AUTHZ -->|Resolve User + APM| APM 
+    APM -->|Role / Scope / Permissions| AUTHZ 
+    AUTHZ -->|Authorized Request + User Context| AGENT 
+    AGENT -->|Agent Identity + Protected User Context| GW 
+    GW --> SP 
+    SP --> GMCP 
+    SP --> CMCP 
+    GMCP --> GCP 
+    CMCP --> ENT
