@@ -1,0 +1,28 @@
+$PROJECT_ID = (gcloud config get-value project).Trim()
+$ACCOUNT = (gcloud config get-value account).Trim()
+
+$REGION = "us-east1"
+
+$STATE_SERVICE = "journey-state-service"
+$WORKFLOW_NAME = "cloud-journey-durable-poc"
+
+$STATE_SA_NAME = "journey-state-sa"
+$WORKFLOW_SA_NAME = "journey-workflow-sa"
+
+$STATE_SA = "$STATE_SA_NAME@$PROJECT_ID.iam.gserviceaccount.com"
+$WORKFLOW_SA = "$WORKFLOW_SA_NAME@$PROJECT_ID.iam.gserviceaccount.com"
+
+Write-Host "PROJECT_ID=$PROJECT_ID"
+Write-Host "ACCOUNT=$ACCOUNT"
+Write-Host "REGION=$REGION"
+
+
+gcloud services enable `
+    run.googleapis.com `
+    workflows.googleapis.com `
+    workflowexecutions.googleapis.com `
+    firestore.googleapis.com `
+    cloudbuild.googleapis.com `
+    artifactregistry.googleapis.com `
+    iam.googleapis.com `
+    logging.googleapis.com

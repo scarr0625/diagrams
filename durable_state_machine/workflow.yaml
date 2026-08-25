@@ -1,0 +1,180 @@
+main:
+  params: [args]
+
+  steps:
+
+    - init:
+        assign:
+          - journey_id: ${args.journey_id}
+          - state_url: ${args.state_service_url}
+
+    - mark_validating_apm:
+        call: http.post
+        args:
+          url: ${state_url + "/journeys/" + journey_id + "/transition"}
+          auth:
+            type: OIDC
+          body:
+            expected_state: "CREATED"
+            next_state: "VALIDATING_APM"
+            actor: "cloud-workflows"
+
+    - simulate_apm_validation:
+        call: sys.sleep
+        args:
+          seconds: 3
+
+    - mark_apm_validated:
+        call: http.post
+        args:
+          url: ${state_url + "/journeys/" + journey_id + "/transition"}
+          auth:
+            type: OIDC
+          body:
+            expected_state: "VALIDATING_APM"
+            next_state: "APM_VALIDATED"
+            actor: "apm-validation-agent"
+
+    - start_inventory:
+        call: http.post
+        args:
+          url: ${state_url + "/journeys/" + journey_id + "/transition"}
+          auth:
+            type: OIDC
+          body:
+            expected_state: "APM_VALIDATED"
+            next_state: "COLLECTING_INVENTORY"
+            actor: "cloud-workflows"
+
+    - simulate_inventory:
+        call: sys.sleep
+        args:
+          seconds: 3
+
+    - inventory_complete:
+        call: http.post
+        args:
+          url: ${state_url + "/journeys/" + journey_id + "/transition"}
+          auth:
+            type: OIDC
+          body:
+            expected_state: "COLLECTING_INVENTORY"
+            next_state: "INVENTORY_COMPLETE"
+            actor: "asset-inventory-agent"
+
+    - start_plan:
+        call: http.post
+        args:
+          url: ${state_url + "/journeys/" + journey_id + "/transition"}
+          auth:
+            type: OIDC
+          body:
+            expected_state: "INVENTORY_COMPLETE"
+            next_state: "GENERATING_PLAN"
+            actor: "cloud-workflows"
+
+    - simulate_plan:
+        call: sys.sleep
+        args:
+          seconds: 3
+
+    - plan_ready:
+        call: http.post
+        args:
+          url: ${state_url + "/journeys/" + journey_id + "/transition"}
+          auth:
+            type: OIDC
+          body:
+            expected_state: "GENERATING_PLAN"
+            next_state: "PLAN_READY"
+            actor: "planning-agent"
+
+    - create_approval_callback:
+        call: events.create_callback_endpoint
+        args:
+          http_callback_method: POST
+        result: approval_callback
+
+    - save_callback:
+        call: http.post
+        args:
+          url: ${state_url + "/journeys/" + journey_id + "/callback"}
+          auth:
+            type: OIDC
+          body:
+            callback_url: ${approval_callback.url}
+
+    - log_waiting:
+        call: sys.log
+        args:
+          severity: INFO
+          text: ${"Journey " + journey_id + " is WAITING_FOR_APPROVAL"}
+
+    - wait_for_approval:
+        call: events.await_callback
+        args:
+          callback: ${approval_callback}
+          timeout: 3600
+        result: approval_request
+
+    - approval_decision:
+        switch:
+          - condition: ${approval_request.http_request.body.approved == true}
+            next: mark_approved
+        next: mark_rejected
+
+    - mark_rejected:
+        call: http.post
+        args:
+          url: ${state_url + "/journeys/" + journey_id + "/transition"}
+          auth:
+            type: OIDC
+          body:
+            expected_state: "WAITING_FOR_APPROVAL"
+            next_state: "REJECTED"
+            actor: "approver"
+        next: rejected
+
+    - mark_approved:
+        call: http.post
+        args:
+          url: ${state_url + "/journeys/" + journey_id + "/transition"}
+          auth:
+            type: OIDC
+          body:
+            expected_state: "WAITING_FOR_APPROVAL"
+            next_state: "APPROVED"
+            actor: "approver"
+
+    - start_provisioning:
+        call: http.post
+        args:
+          url: ${state_url + "/journeys/" + journey_id + "/transition"}
+          auth:
+            type: OIDC
+          body:
+            expected_state: "APPROVED"
+            next_state: "PROVISIONING"
+            actor: "cloud-workflows"
+
+    - simulate_provisioning:
+        call: sys.sleep
+        args:
+          seconds: 5
+
+    - complete:
+        call: http.post
+        args:
+          url: ${state_url + "/journeys/" + journey_id + "/transition"}
+          auth:
+            type: OIDC
+          body:
+            expected_state: "PROVISIONING"
+            next_state: "COMPLETED"
+            actor: "project-factory"
+
+    - success:
+        return: "COMPLETED"
+
+    - rejected:
+        return: "REJECTED"
