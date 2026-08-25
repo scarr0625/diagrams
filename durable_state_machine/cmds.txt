@@ -26,3 +26,35 @@ gcloud services enable `
     artifactregistry.googleapis.com `
     iam.googleapis.com `
     logging.googleapis.com
+
+
+
+
+$WORKFLOW_SA = "journey-workflow-sa@schwab-agent-poc.iam.gserviceaccount.com"
+
+$ID_TOKEN = (
+    gcloud auth print-identity-token `
+        --impersonate-service-account=$WORKFLOW_SA `
+        --audiences=$STATE_URL
+).Trim()
+
+
+
+curl.exe -v `
+    -H "Authorization: Bearer $ID_TOKEN" `
+    "$STATE_URL/health"
+
+
+
+$ID_TOKEN = (gcloud auth print-identity-token).Trim()
+
+curl.exe -v `
+    -H "Authorization: Bearer $ID_TOKEN" `
+    "$STATE_URL/health"
+
+
+$STATE_URL = (
+    gcloud run services describe $STATE_SERVICE `
+        --region=$REGION `
+        --format="value(status.url)"
+).Trim()
