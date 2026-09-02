@@ -58,3 +58,52 @@ $STATE_URL = (
         --region=$REGION `
         --format="value(status.url)"
 ).Trim()
+
+
+
+{
+  "display_name": "Durable Cloud Compass Agent",
+  "description": "Durable Cloud Journey PoC backed by Cloud SQL",
+  "service_account": "cloud-compass-agent@schwab-agent-poc.iam.gserviceaccount.com",
+  "min_instances": 0,
+  "max_instances": 2,
+  "env_vars": {
+    "GOOGLE_GENAI_USE_VERTEXAI": "TRUE",
+    "JOURNEY_AGENT_MODEL": "gemini-2.5-flash",
+    "CLOUD_SQL_INSTANCE": "schwab-agent-poc:us-central1:cloud-journey-db",
+    "CLOUD_SQL_IP_TYPE": "PUBLIC",
+    "CLOUD_SQL_IAM_AUTH": "false",
+    "DB_NAME": "cloudjourney",
+    "DB_USER": "journey_app",
+    "DB_PASSWORD": {
+      "secret": "cloud-compass-db-password",
+      "version": "latest"
+    },
+    "DB_POOL_SIZE": "5",
+    "DB_MAX_OVERFLOW": "2"
+  }
+}
+
+
+$PROJECT_ID = "schwab-agent-poc"
+$RUNTIME_SA = "cloud-compass-agent@schwab-agent-poc.iam.gserviceaccount.com"
+$SECRET_ID = "cloud-compass-db-password"
+$PROJECT_NUMBER = "82648816720"
+
+gcloud projects add-iam-policy-binding $PROJECT_ID `
+    --member="serviceAccount:$RUNTIME_SA" `
+    --role="roles/cloudsql.client"
+
+gcloud projects add-iam-policy-binding $PROJECT_ID `
+    --member="serviceAccount:$RUNTIME_SA" `
+    --role="roles/aiplatform.user"
+
+gcloud secrets add-iam-policy-binding $SECRET_ID `
+    --project=$PROJECT_ID `
+    --member="serviceAccount:$RUNTIME_SA" `
+    --role="roles/secretmanager.secretAccessor"
+
+gcloud secrets add-iam-policy-binding $SECRET_ID `
+    --project=$PROJECT_ID `
+    --member="serviceAccount:service-$PROJECT_NUMBER@gcp-sa-aiplatform.iam.gserviceaccount.com" `
+    --role="roles/secretmanager.secretAccessor"
