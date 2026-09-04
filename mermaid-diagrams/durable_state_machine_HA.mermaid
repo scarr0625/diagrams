@@ -10,7 +10,7 @@ Workflow[Durable Journey State Machine]
 
 Domain[Cloud Journey Domain Services]
 
-DB[(Cloud Journey Database)]
+DB[(Cloud Journey Database<br/>CJ Data + Locally Referenced STS Insights Data)]
 
 Events[(Event Bus / Outbox)]
 
@@ -18,10 +18,10 @@ Checklist[Checklist & Readiness Service]
 
 Adapters[Integration Adapter Layer]
 
-STS[STS Insights]
-Jira[Jira / Governance]
+STSBigQuery[(STS Insights BigQuery<br/>Including Jira Data)]
+
 MyAccess[MyAccess]
-AppFactory[App Factory]
+
 Provision[Provisioning Platform]
 
 
@@ -45,8 +45,8 @@ Checklist --> Domain
 
 Workflow --> Adapters
 
-Adapters --> STS
-Adapters --> Jira
+Adapters --> STSBigQuery
+
 Adapters --> MyAccess
-Adapters --> AppFactory
+
 Adapters --> Provision
